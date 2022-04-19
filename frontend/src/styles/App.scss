@@ -1,0 +1,74 @@
+@import 'reset';
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;400&display=swap');
+
+$background-color: #191414;
+$spotify-green: #1DB954;
+$spotify-hover: #0c4c22;
+
+$white-box-shadow: 2px 2px 7px rgba(255, 255, 255, 0.4);
+$box-shadow: 2px 2px 7px rgba(0, 0, 0, 0.4);
+
+body {
+    font-family: 'Roboto', sans-serif;
+
+    background-color: $background-color;
+
+    max-width: 100vw;
+    overflow-x: hidden;
+    
+    max-height: 100vh;
+    overflow-y: hidden;
+
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    scroll-behavior: smooth;
+
+    color: #FFF;
+}
+
+#logo_container {
+
+    width: 30vw;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+    padding: 2rem;
+
+    background-color: rgba(148, 148, 148, 0.3);
+    box-shadow: $white-box-shadow;
+
+    border-radius: 7px;
+
+    margin-bottom: 3rem;
+
+}
+
+#login_button {
+    border-radius: 50px;
+    width: 300px;
+    height: 40px;
+
+    margin: auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    background-color: $spotify-green;
+    box-shadow: $box-shadow;
+
+    transition: background-color .2s;
+
+    &:hover {
+        background-color: $spotify-hover;
+    }
+}
