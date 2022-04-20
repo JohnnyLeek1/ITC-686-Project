@@ -1,4 +1,5 @@
 @import 'reset';
+@import 'animations';
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;400&display=swap');
 
 $background-color: #191414;
@@ -7,19 +8,20 @@ $spotify-hover: #0c4c22;
 
 $white-box-shadow: 2px 2px 7px rgba(255, 255, 255, 0.4);
 $box-shadow: 2px 2px 7px rgba(0, 0, 0, 0.4);
+$img-box-shadow: 5px 5px 7px rgba(0, 0, 0, 0.4);
 
 body {
     font-family: 'Roboto', sans-serif;
 
-    background-color: $background-color;
+    background-color: #121212;
 
     max-width: 100vw;
-    overflow-x: hidden;
+    
     
     max-height: 100vh;
-    overflow-y: hidden;
 
     min-height: 100vh;
+    overflow-y: overlay;
 
     display: flex;
     align-items: center;
@@ -71,4 +73,235 @@ body {
     &:hover {
         background-color: $spotify-hover;
     }
+}
+
+#home_screen {
+    width: 100vw;
+    height: 100vh;
+
+    padding: 3rem;
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+    #profile_pic_container {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+
+        img {
+            width: 200px;
+            height: auto;
+        }
+
+        p {
+            margin-top: 10px;
+        }
+    }
+
+    .help_text {
+        margin-top: 10px;
+    }
+
+    #select_table {
+
+        margin-top: 1rem;
+
+        .tabs {
+            display: flex;
+
+            .tab {
+                width: 200px;
+                height: 80px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: #333;
+
+                cursor: pointer;
+                transition: background-color .2s;
+
+                &:first-child {
+                    border-top-left-radius: 7px;
+                }
+
+                &:last-child {
+                    border-top-right-radius: 7px;
+                }
+
+                &:hover,
+                &.active {
+                    background-color: $spotify-hover;
+                }
+            }
+        }
+
+        .body {
+
+            background-color: #333;
+
+            padding: 2rem;
+
+            #track_container {
+                width: 100%;
+
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+                flex-wrap: wrap;
+
+                .track {
+
+                    margin: 1rem;
+                    
+                    width: 300px;
+                    max-width: 300px;
+
+                    display: flex;
+                    flex-direction: column;
+
+                    padding: 15px;
+
+                    background-color: #171717;
+                    border-radius: 7px;
+
+                    img {
+                        width: 250px;
+                        height: 250px;
+
+                        margin: 0 auto;
+
+                        box-shadow: $img-box-shadow;
+                        object-fit: cover;
+                    }
+
+                    .text_container {
+
+                        padding-left: 10px;
+
+                        .track_name {
+                            font-weight: 900;
+                        }
+
+                        .artist_name {
+                            font-weight: 100;
+                        }
+                    }
+
+                    transition: background-color .2s;
+                    cursor: pointer;
+
+                    &:hover {
+                        background-color: #282828;
+                    }
+                }
+            }
+        }
+    }
+}
+
+#selected_song_page {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    justify-content: center;
+
+    h1 { 
+        text-align: center; 
+
+        &.left_align {
+            text-align: left;
+        }
+    }
+
+    #song_info_container {
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        min-width: 50vw;
+
+        img {
+            width: 400px;
+        }
+
+        p {
+            font-size: 20px;
+        }
+
+        .track_name {
+            font-weight: 900;
+        }
+
+        .artist_name {
+            font-weight: 100;
+        }
+
+        .right {
+            margin-left: 1rem;
+            width: 30vw;
+            height: fit-content;
+
+            background-color: #282828;
+            border-radius: 7px;
+
+            padding: 2rem;
+
+            .header {
+                font-size: 30px;
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+
+            .audio_feature {
+                margin-top: 1rem;
+            }
+        }
+    }
+
+    #button_container {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+
+        margin-top: 2rem;
+
+        div {
+            padding: 1rem;
+
+            width: 400px;
+            max-height: 56px;
+            white-space: nowrap; 
+            overflow: hidden;
+            text-overflow: ellipsis; 
+            display: block;
+            text-align: center;
+
+            border-radius: 7px;
+            cursor: pointer;
+
+            transition: background-color .2s;
+
+            &#back_button {
+                background-color: #dc3545;
+
+                &:hover {
+                    background-color: #7b1c25;
+                }
+            }
+
+            &#recommend_button {
+                background-color: $spotify-green;
+
+                &:hover {
+                    background-color: $spotify-hover;
+                }
+            }
+        }
+
+
+    }
+
 }

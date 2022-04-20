@@ -1,0 +1,28 @@
+.to_top {
+    position: relative;
+    transform: translateY(0%);
+    animation: slide_to_top 1s forwards;
+    opacity: 0;
+}
+
+@keyframes slide_to_top {
+    100% { transform: translateY(-200%); opacity: 1; }
+}
+
+.fade_in {
+    animation: fade_in 1s forwards;
+    opacity: 0;
+}
+
+.fade_out {
+    animation: fade_out 1s forwards;
+    opacity: 1;
+}
+
+@keyframes fade_in {
+    100% { opacity: 1; }
+}
+
+@keyframes fade_out {
+    100% { opacity: 0; }
+}

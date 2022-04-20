@@ -23,7 +23,6 @@ APP.get('/authenticate', (req, res) => {
 
     api.authorizationCodeGrant(code).then(data => {
         const { expires_in, access_token, refresh_token } = data.body;
-        console.log(access_token);
         api.setAccessToken(access_token);
         api.setRefreshToken(refresh_token);
         res.redirect(`http://localhost:3000/login/${access_token}/${refresh_token}`);
@@ -37,7 +36,32 @@ APP.get('/my_info', (_, res) => {
     api.getMe().then(data => {
         res.json(data);
     })
-})
+});
+
+APP.get('/top_tracks', (_, res) => {
+    api.getMyTopTracks().then(data => {
+        res.json(data);
+    })
+});
+
+APP.get('/top_artists', (_, res) => {
+    api.getMyTopArtists().then(data => {
+        res.json(data);
+    })
+});
+
+APP.get('/my_playlists', (_, res) => {
+    api.getUserPlaylists().then(data => {
+        res.json(data);
+    })
+});
+
+APP.get('/get_track_features', (req, res) => {
+    api.getAudioFeaturesForTrack(req.query.trackId).then(data => {
+        res.json(data);
+    })
+});
+
 
 APP.listen(PORT, () => {
     console.log(`App listening @ http://localhost:${PORT}`);
