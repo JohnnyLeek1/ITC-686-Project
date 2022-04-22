@@ -1,6 +1,4 @@
-const { application } = require('express');
 const cors = require('cors')
-const request = require('request');
 require('dotenv').config();
 const express = require('express');
 const SpotifyWebApi = require('spotify-web-api-node');
@@ -62,6 +60,14 @@ APP.get('/get_track_features', (req, res) => {
     })
 });
 
+APP.post('/generate_similar', (req, res) => {
+    const { id, idType } = req.body;
+
+    console.log(id);
+    console.log(idType);
+
+    res.json({'success': id, 'type': idType});
+})
 
 APP.listen(PORT, () => {
     console.log(`App listening @ http://localhost:${PORT}`);

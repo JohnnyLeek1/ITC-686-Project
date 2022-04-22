@@ -83,7 +83,7 @@ export default function HomePage() {
                     <h3 className="help_text">Select one of your top artists:</h3>
 
                     <div id="track_container" className="fade_in">
-                        {topArtists.map((artist, index) => <TrackDisplay image={artist.images[0].url} albumName={artist.name} trackName={artist.name} artist="" isSong={false} key={index} />)}
+                        {topArtists.map((artist, index) => <TrackDisplay image={artist.images[0].url} albumName={artist.name} trackName={artist.name} artist="" isSong={false} songId={artist.id} key={index} />)}
                     </div>
                 </>
             );

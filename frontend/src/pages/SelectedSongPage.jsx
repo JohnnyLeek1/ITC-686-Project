@@ -19,6 +19,19 @@ export default function SelectedSongPage() {
         }
     }, [userContext.selectedSong, navigate]);
 
+    const selectSong = () => {
+
+        console.log(userContext.selectedSong.songId);
+
+        fetch('/generate_similar', {
+            method: 'POST',
+            headers: {'content-type': 'application/json'},
+            body: JSON.stringify({id: userContext.selectedSong.songId, idType: userContext.selectedSong.isSong ? "song" : "artist"})
+        })
+        .then(response => response.json())
+        .then(data => console.log(data));
+    }    
+
     const AudioFeature = ({featureName, value, color}) => {
         return (
             <div className="audio_feature">
@@ -57,7 +70,7 @@ export default function SelectedSongPage() {
                     </div>
                     <div id="button_container">
                         <div id="back_button" onClick={() => navigate('/home')}>Go back</div>
-                        <div id="recommend_button">Recommend me songs like {userContext.selectedSong.trackName}</div>
+                        <div id="recommend_button" onClick={() => selectSong()}>Recommend me songs like {userContext.selectedSong.trackName}</div>
                     </div>
                 </div>
             : undefined
