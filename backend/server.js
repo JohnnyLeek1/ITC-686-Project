@@ -4,6 +4,8 @@ const express = require('express');
 const SpotifyWebApi = require('spotify-web-api-node');
 const APP = express();
 const PORT = 8000;
+const neo4j = require('neo4j-driver')
+const driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", "password"))
 
 APP.use(cors());
 APP.use(express.json());
@@ -60,14 +62,118 @@ APP.get('/get_track_features', (req, res) => {
     })
 });
 
-APP.post('/generate_similar', (req, res) => {
+APP.post('/generate_similar', async (req, res) => {
     const { id, idType } = req.body;
 
-    console.log(id);
-    console.log(idType);
+    if (idType == 'artist') {
+        createArtist(id)
+        .finally(res.json({'success': id, 'type': idType}))
+    } else if (idType == 'song') {
+        let trackInfo = {'id': id}
+        let artists = []
+        let album_id = ""
+        let {body} = await api.getTrack(id)
 
-    res.json({'success': id, 'type': idType});
+        trackInfo['id'] = body.id;
+        trackInfo['name'] = body.name;
+        trackInfo['year'] = body.album.release_date.substring(0, 4);
+        trackInfo['release_date'] = body.album.release_date;
+        for (const artist of body.artists) {
+            await createArtist(artist.id)
+            artists.push(artist.id);
+        }
+        await createAlbum(body.album.id);
+        album_id = body.album.id;
+
+
+        audio = await api.getAudioFeaturesForTrack(id)
+
+        trackInfo['danceability'] = audio.body.danceability
+        trackInfo['energy'] = audio.body.energy
+        trackInfo['key'] = audio.body.key
+        trackInfo['loudness'] = audio.body.loudness
+        trackInfo['speechiness'] = audio.body.speechiness
+        trackInfo['acousticness'] = audio.body.acousticness
+        trackInfo['instrumentalness'] = audio.body.instrumentalness
+        trackInfo['liveness'] = audio.body.liveness
+        trackInfo['valence'] = audio.body.valence
+        trackInfo['tempo'] = audio.body.tempo
+        trackInfo['duration_ms'] = audio.body.duration_ms
+        
+
+        await runQuery("MERGE (a:Song{id:$id, name:$name, danceability:$danceability, "+
+                "energy:$energy, key:$key, loudness:$loudness, speechiness:$speechiness, "+
+                "acousticness:$acousticness, instrumentalness:$instrumentalness, liveness:$liveness, valence:$valence, "+
+                "tempo:$tempo, duration_ms:$duration_ms, year:$year, release_date:$release_date})", trackInfo);
+
+        for (let i = 0; i<artists.length; i++) {
+            if (i == 0) {
+                await runQuery("MATCH (a:Album), (b:Artist) "+
+                        "WHERE a.id = $album_id AND b.id = $artist_id "+
+                        "MERGE (a)-[r:CREATED_BY]->(b) ",
+                    {'artist_id': artists[i], 'album_id': album_id})
+                await runQuery("MATCH (a:Song), (b:Artist) "+
+                        "WHERE a.id = $id AND b.id = $artist_id "+
+                        "MERGE (a)-[r:BY]->(b) ",
+                    {'id': trackInfo['id'], 'artist_id': artists[i]})
+            }
+            else {
+                await runQuery("MATCH (a:Song), (b:Artist) "+
+                        "WHERE a.id = $id AND b.id = $artist_id "+
+                        "MERGE (a)-[r:FEATURING]->(b) ",
+                    {'artist_id': artists[i], 'id': trackInfo['id']})
+            }
+        }
+
+        await runQuery("MATCH (a:Song), (b:Album) "+
+            "WHERE a.id = $id AND b.id = $album_id "+
+            "MERGE (a)-[r:ALBUM_TRACK]->(b) ",
+            {'id': trackInfo['id'], 'album_id': album_id})
+        
+        console.log("done with " + trackInfo['name'])
+        res.json({'success': id, 'type': idType})
+    } else if (idType == 'album') {
+        createAlbum(id)
+        .finally(res.json({'success': id, 'type': idType}))
+    }
+    
 })
+
+async function createArtist(id) {
+    let artistInfo = {'id': id}
+    api.getArtist(id)
+    .then(data => {
+        artistInfo['artist'] = data.body.name;
+    })
+    .then(() => {
+        // Make sure the artist exists in the database
+        runQuery("MERGE (a:Artist{id:$id, name:$artist})", artistInfo);
+    })
+
+    return Promise;
+}
+
+async function createAlbum(id) {
+    let albumInfo = {'id': id}
+    api.getAlbum(id)
+    .then(data => {
+        albumInfo['name'] = data.body.name;
+    })
+    .then(() => {
+        // Make sure the album exists in the database
+        runQuery("MERGE (a:Album{id:$id, name:$name})", albumInfo);
+    })
+
+    return Promise;
+}
+
+async function runQuery(query, params) {
+    const session = driver.session();
+    await session.run(query, params);
+    await session.close();
+
+    return Promise;
+}
 
 APP.listen(PORT, () => {
     console.log(`App listening @ http://localhost:${PORT}`);
