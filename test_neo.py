@@ -2,15 +2,58 @@ from concurrent.futures import process
 from pypher import Pypher
 from neo4j import GraphDatabase
 import pandas as pd
-import os
+import os, json
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+from dotenv import load_dotenv
 
+DATA_DIR = "data/"
+CHUNK_SIZE = 50
 class SpotifyDatabase:
 
     def __init__(self, uri, user, password):
+        load_dotenv()
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
+        self.spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 
     def close(self):
         self.driver.close()
+
+    def create_songs(self, song_list):
+        song_ids = []
+
+        songs = {}
+
+        # Get song IDs from songs
+        for song in song_list:
+            song_ids.append(song["track_uri"].split(':')[-1])
+
+        features = self.spotify.audio_features(song_ids)
+        tracks = self.spotify.tracks(song_ids)
+
+
+        for feature in features:
+            songs[feature["id"]] = feature
+            
+        for track in tracks["tracks"]:
+            songs[track["id"]]["album"] = track["album"]["name"]
+            songs[track["id"]]["album_id"] = track["album"]["id"]
+            songs[track["id"]]["name"] = track["name"]
+
+            artist_names = []
+
+            for artist in track["artists"]:
+                artist_names.append({"name": artist["name"], "id": artist["id"]})
+
+            songs[track["id"]]["artists"] = artist_names
+
+        ### Debug print if needed
+        # print(song_ids)
+        # print(json.dumps(songs, indent=2))
+
+        for song in songs:
+            self.create_song(songs[song])
+        print(f'Created chunk of {CHUNK_SIZE} songs')
 
     def create_song(self, song_info):
         with self.driver.session() as session:
@@ -18,76 +61,70 @@ class SpotifyDatabase:
 
     def _create_song(self, tx, song_info):
         # Create song, album, and artist nodes
-        tx.run("CREATE (a:Song) "
-                        "SET a.id = $id "
-                        "SET a.name = $name "
-                        "SET a.danceability = $danceability "
-                        "SET a.energy = $energy "
-                        "SET a.key = $key "
-                        "SET a.loudness = $loudness "
-                        "SET a.speechiness = $speechiness "
-                        "SET a.acousticness = $acousticness "
-                        "SET a.instrumentalness = $instrumentalness "
-                        "SET a.liveness = $liveness "
-                        "SET a.valence = $valence "
-                        "SET a.tempo = $tempo "
-                        "SET a.duration_ms = $duration_ms "
-                        "SET a.year = $year "
-                        "SET a.release_date = $release_date "
-                        "RETURN a.name",
-                        id=song_info[0], name=song_info[1],
-                        danceability=song_info[7], energy=song_info[8],
-                        key=song_info[9], loudness=song_info[10], speechiness=song_info[11],
-                        acousticness=song_info[12], instrumentalness=song_info[13], liveness=song_info[14],
-                        valence=song_info[15], tempo=song_info[16], duration_ms=song_info[17],
-                        year=song_info[18], release_date=song_info[19])
-        tx.run("MERGE (a:Album{name:$album, id:$album_id})", album=song_info[2], album_id=song_info[3])
-        for i in range(0, len(song_info[4])):
-            tx.run("MERGE (a:Artist{name:$artist, id:$artist_id})", artist=song_info[4][i], artist_id=song_info[5][i])
+        tx.run("MERGE (a:Song{id:$id, name:$name, danceability:$danceability, "
+               "energy:$energy, key:$key, loudness:$loudness, speechiness:$speechiness, "
+               "acousticness:$acousticness, instrumentalness:$instrumentalness, liveness:$liveness, valence:$valence, "
+               "tempo:$tempo, duration_ms:$duration_ms})",
+                id=song_info["id"], name=song_info["name"],
+                danceability=song_info["danceability"], energy=song_info["energy"],
+                key=song_info["key"], loudness=song_info["loudness"], speechiness=song_info["speechiness"],
+                acousticness=song_info["acousticness"], instrumentalness=song_info["instrumentalness"], liveness=song_info["liveness"],
+                valence=song_info["valence"], tempo=song_info["tempo"], duration_ms=song_info["duration_ms"])
+        
+        tx.run("MERGE (a:Album{name:$album, id:$album_id})", album=song_info["album"], album_id=song_info["album_id"])
+        
+        for i in range(0, len(song_info["artists"])):
+            tx.run("MERGE (a:Artist{name:$artist, id:$artist_id})", artist=song_info["artists"][i]["name"], artist_id=song_info["artists"][i]["id"])
 
-        # Connect each together as needed
+        # # Connect each together as needed
         tx.run("MATCH (a:Song), (b:Album) "
                 "WHERE a.id = $id AND b.id = $album_id "
                 "CREATE (a)-[r:ALBUM_TRACK]->(b) ",
-            id=song_info[0], album_id=song_info[3])
+            id=song_info["id"], album_id=song_info["album_id"])
 
 
-        for i in range(0, len(song_info[4])):
+        for i in range(0, len(song_info["artists"])):
             if i == 0:
                 tx.run("MATCH (a:Album), (b:Artist) "
                         "WHERE a.id = $album_id AND b.id = $artist_id "
                         "MERGE (a)-[r:CREATED_BY]->(b) ",
-                    artist_id=song_info[5][i], album_id=song_info[3])
+                    artist_id=song_info["artists"][i]["id"], album_id=song_info["album_id"])
                 tx.run("MATCH (a:Song), (b:Artist) "
                         "WHERE a.id = $id AND b.id = $artist_id "
                         "MERGE (a)-[r:BY]->(b) ",
-                    id=song_info[0], artist_id=song_info[5][i])
+                    id=song_info["id"], artist_id=song_info["artists"][i]["id"])
             else:
                 tx.run("MATCH (a:Song), (b:Artist) "
                         "WHERE a.id = $id AND b.id = $artist_id "
                         "MERGE (a)-[r:FEATURING]->(b) ",
-                    artist_id=song_info[5][i], id=song_info[0])
+                    artist_id=song_info["artists"][i]["id"], id=song_info["id"])
 
 if __name__ == "__main__":
     database = SpotifyDatabase("bolt://localhost:7687", "neo4j", "password")
 
     os.chdir(os.getcwd() + '/')
-    song_info = []
 
-    with pd.read_csv(f'tracks_features.csv', chunksize=1000) as reader:
-        print('creating songs')
-        for chunk in reader:
-            for i in range(chunk['id'][:1].index.start, len(chunk['id']) + chunk['id'][:1].index.start):
-                song = []
-                for key in chunk:
-                    if (key == 'track_number' or key == 'disc_number' or key == 'mode' or key == 'time_signature'):
-                        continue
-                    elif (key == 'artists' or key == 'artist_ids'):
-                        song.append(eval(chunk[key][i]))
-                    elif (key == 'id' or key == 'name' or key == 'album' or key == 'album_id' or key == 'release_date'):
-                        song.append(chunk[key][i])
-                    else:
-                        song.append(float(chunk[key][i]))
-                database.create_song(song_info=song)
+    filenames = os.listdir(DATA_DIR)
+
+    print(f"Reading data from {DATA_DIR}...")
+
+    current_songs = []
+
+    os.chdir(f'{os.getcwd()}/{DATA_DIR}')
+    for filename in sorted(filenames):
+        if filename.startswith("mpd.slice"):
+            playlist_file = open(filename)
+            playlist_as_string = playlist_file.read()
+            playlist_file.close()
+
+            playlists = json.loads(playlist_as_string)["playlists"]
+            for playlist in playlists:
+                for track in playlist["tracks"]:
+                    current_songs.append(track)
+
+                    # Chunk size reached
+                    if len(current_songs) == CHUNK_SIZE:
+                        database.create_songs(current_songs)
+                        current_songs = []   
 
     database.close()
