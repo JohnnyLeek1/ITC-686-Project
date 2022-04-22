@@ -129,10 +129,28 @@ APP.post('/generate_similar', async (req, res) => {
             "WHERE a.id = $id AND b.id = $album_id "+
             "MERGE (a)-[r:ALBUM_TRACK]->(b) ",
             {'id': trackInfo['id'], 'album_id': album_id})
-        
-        console.log("done with " + trackInfo['name'])
-        res.json({'success': id, 'type': idType})
-    } else if (idType == 'album') {
+
+
+        let playlist = await runQuery("MATCH (p1:Song), (p2:Song) "+
+            "WHERE p1 <> p2 AND p1.id =$id "+
+            "WITH SUM(ABS(p1.danceability - p2.danceability) + ABS(p1.energy - p2.energy) + "+
+            "ABS(p1.speechiness - p2.speechiness) + ABS(p1.acousticness - p2.acousticness) + "+
+            "ABS(p1.instrumentalness - p2.instrumentalness) + ABS(p1.liveness - p2.liveness) + "+
+            "ABS(p1.valence - p2.valence)) AS sim, "+
+            "p1, p2 "+
+            "RETURN p2.name "+
+            "ORDER BY sim ASC "+
+            "LIMIT 50 ",
+            {'id': id});
+
+        cleaned_playlist = []
+
+        for (let i = 0; i<playlist.records.length; i++) {
+            cleaned_playlist.push(playlist.records[i]._fields[0]);
+        }
+
+        await res.json({'success': id, 'playlist': cleaned_playlist})
+    } else if (idType == 'playlist') {
         createAlbum(id)
         .finally(res.json({'success': id, 'type': idType}))
     }
@@ -169,10 +187,10 @@ async function createAlbum(id) {
 
 async function runQuery(query, params) {
     const session = driver.session();
-    await session.run(query, params);
+    let results = await session.run(query, params);
     await session.close();
 
-    return Promise;
+    return results;
 }
 
 APP.listen(PORT, () => {

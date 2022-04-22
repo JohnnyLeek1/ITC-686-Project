@@ -12,7 +12,7 @@ export default function SelectedSongPage() {
     useEffect(() => {
         if(userContext.selectedSong === undefined) { navigate('/home'); return; }
 
-        if(userContext.selectedSong.isSong) {
+        if(userContext.selectedSong.type === "song") {
             fetch(`/get_track_features/?trackId=${userContext.selectedSong.songId}`)
             .then(response => response.json())
             .then(data => setSongFeatures(data.body));
@@ -26,7 +26,7 @@ export default function SelectedSongPage() {
         fetch('/generate_similar', {
             method: 'POST',
             headers: {'content-type': 'application/json'},
-            body: JSON.stringify({id: userContext.selectedSong.songId, idType: userContext.selectedSong.isSong ? "song" : "artist"})
+            body: JSON.stringify({id: userContext.selectedSong.songId, idType: userContext.selectedSong.type})
         })
         .then(response => response.json())
         .then(data => console.log(data));
@@ -47,14 +47,14 @@ export default function SelectedSongPage() {
         <>
             {userContext.selectedSong !== undefined ? 
                 <div id="selected_song_page" className="fade_in">
-                    <h1 className={userContext.selectedSong.isSong ? 'left_align' : ''}>Good choice!</h1>
+                    <h1 className={userContext.selectedSong.type === "song" ? 'left_align' : ''}>Good choice!</h1>
                     <div id="song_info_container">
                         <div className="left">
                             <img src={userContext.selectedSong.image} alt={`Album art for ${userContext.selectedSong.albumName}`} />
                             <p className="track_name">{userContext.selectedSong.trackName}</p>
                             <p className="artist_name">{userContext.selectedSong.artist}</p>
                         </div>
-                        {userContext.selectedSong.isSong ?
+                        {userContext.selectedSong.type === "song" ?
                             <div className="right">
                                 <p className="header">About this song:</p>
                                 {songFeatures === undefined ? <LoadingIcon /> : 

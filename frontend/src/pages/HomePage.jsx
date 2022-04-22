@@ -52,10 +52,10 @@ export default function HomePage() {
     const HomeScreen = () => {
         const [currentTab, setCurrentTab] = useState("top_tracks");
 
-        const TrackDisplay = ({image, albumName, trackName, artist, isSong, songId}) => {
+        const TrackDisplay = ({image, albumName, trackName, artist, type, songId}) => {
 
             return (
-                <div className="track" onClick={() => selectSong({ image: image, albumName: albumName, trackName: trackName, artist: artist, isSong: isSong, songId: songId })}>
+                <div className="track" onClick={() => selectSong({ image: image, albumName: albumName, trackName: trackName, artist: artist, type: type, songId: songId })}>
                     <img src={image} alt={`Album art for ${albumName}`} />
                     <div className="text_container">
                         <p className="track_name">{trackName}</p>
@@ -71,7 +71,7 @@ export default function HomePage() {
                     <h3 className="help_text">Select one of your top tracks:</h3>
 
                     <div id="track_container" className="fade_in">
-                        {topTracks.map((track, index) => <TrackDisplay image={track.album.images[0].url} albumName={track.album.name} trackName={track.name} artist={track.artists[0].name} isSong={true} songId={track.id} key={index} />)}
+                        {topTracks.map((track, index) => <TrackDisplay image={track.album.images[0].url} albumName={track.album.name} trackName={track.name} artist={track.artists[0].name} type="song" songId={track.id} key={index} />)}
                     </div>
                 </>
             );
@@ -83,7 +83,7 @@ export default function HomePage() {
                     <h3 className="help_text">Select one of your top artists:</h3>
 
                     <div id="track_container" className="fade_in">
-                        {topArtists.map((artist, index) => <TrackDisplay image={artist.images[0].url} albumName={artist.name} trackName={artist.name} artist="" isSong={false} songId={artist.id} key={index} />)}
+                        {topArtists.map((artist, index) => <TrackDisplay image={artist.images[0].url} albumName={artist.name} trackName={artist.name} artist="" type="artist" songId={artist.id} key={index} />)}
                     </div>
                 </>
             );
@@ -95,7 +95,7 @@ export default function HomePage() {
                     <h3 className="help_text">Select one of your playlists:</h3>
 
                     <div id="track_container" className="fade_in">
-                        {playlists.map((playlist, index) => <TrackDisplay image={playlist.images[0] ? playlist.images[0].url : defaultPlaylist} albumName={playlist.name} trackName={playlist.name} artist="" isSong={false} key={index} /> )}
+                        {playlists.map((playlist, index) => <TrackDisplay image={playlist.images[0] ? playlist.images[0].url : defaultPlaylist} albumName={playlist.name} trackName={playlist.name} artist="" type="playlist" key={index} /> )}
                     </div>
                 </>
             );
