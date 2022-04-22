@@ -1,2 +1,3 @@
 /.venv
 /backend/.env
+tracks_features.csv
