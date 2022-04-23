@@ -323,79 +323,107 @@ body {
 
 }
 
-#results {
-    width: 80vw;
-    max-height: 80vh;
+#result_page {
+    .result_title {
+        margin-bottom: 1rem;
+    }
 
-    overflow-y: scroll;
-    margin: auto;
-    background-color: #282828;
+    #results {
+        width: 80vw;
+        max-height: 80vh;
 
-    border-top-left-radius: 7px;
-    border-top-right-radius: 7px;
+        overflow-y: scroll;
+        margin: auto;
+        background-color: #282828;
 
-    .song_display {
-        width: 100%;
+        border-top-left-radius: 7px;
+        border-top-right-radius: 7px;
+
+        .song_display {
+            width: 100%;
+            display: flex;
+
+            height: 90px;
+
+            cursor: pointer;
+
+            align-items: center;
+            transition: background-color .2s;
+
+            &:hover {
+                background-color: #8c8c8c;
+            }
+
+            p, img, div {
+                margin: 0 10px;
+            }
+
+            .number {
+                width: 20px;
+            }
+
+            .album_art {
+                width: 60px;
+                height: auto;
+
+                object-fit: cover;
+            }
+
+            .title {
+                width: 40%;
+            }
+
+            .title, .artists {
+                white-space: nowrap; 
+                overflow: hidden;
+                text-overflow: ellipsis; 
+                display: block;
+            }
+
+            .artists {
+                font-size: .8rem;
+                color: #cacaca;
+            }
+
+            .album_name {
+                width: calc(100% - 40% - 60px - 20px - 5%);
+            }
+
+            .duration {
+                width: 5%;
+            }
+
+            &.title_bar {
+                height: 30px;
+                margin: 10px 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+                background-color: #282828;
+
+                position: sticky;
+                top: 0;
+            }
+        }
+    }
+
+    #add_button {
+
+        width: 300px;
+        height: 60px;
+        margin: auto;
+        margin-top: 1rem;
+
         display: flex;
-
-        height: 90px;
+        align-items: center;
+        justify-content: center;
 
         cursor: pointer;
+        border-radius: 50px;
 
-        align-items: center;
+        background-color: $spotify-green;
         transition: background-color .2s;
 
         &:hover {
-            background-color: #8c8c8c;
-        }
-
-        p, img, div {
-            margin: 0 10px;
-        }
-
-        .number {
-            width: 20px;
-        }
-
-        .album_art {
-            width: 60px;
-            height: auto;
-
-            object-fit: cover;
-        }
-
-        .title {
-            width: 40%;
-        }
-
-        .title, .artists {
-            white-space: nowrap; 
-            overflow: hidden;
-            text-overflow: ellipsis; 
-            display: block;
-        }
-
-        .artists {
-            font-size: .8rem;
-            color: #cacaca;
-        }
-
-        .album_name {
-            width: calc(100% - 40% - 60px - 20px - 5%);
-        }
-
-        .duration {
-            width: 5%;
-        }
-
-        &.title_bar {
-            height: 30px;
-            margin: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
-            background-color: #282828;
-
-            position: sticky;
-            top: 0;
+            background-color: $spotify-hover;
         }
     }
 }

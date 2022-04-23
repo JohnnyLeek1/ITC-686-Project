@@ -65,13 +65,19 @@ APP.get('/get_track_features', (req, res) => {
 APP.post('/get_track_info', (req, res) => {
     const { ids } = req.body;
 
-    //console.log(ids);
-
     api.getTracks(ids).then(data => {
         res.json(data);
     })
 });
 
+APP.post('/add_tracks_to_spotify', async (req, res) => {
+    const { name, ids } = req.body;
+
+    const playlist = await api.createPlaylist(`Songs similar to ${name}`, {description: "Generated with ITC-686 Music Recommendation App"});
+    const addTracks = await api.addTracksToPlaylist(playlist.body.id, ids.map(id => `spotify:track:${id}`));
+
+    res.json(addTracks);
+})
 
 APP.post('/generate_similar', async (req, res) => {
     const { id, idType } = req.body;

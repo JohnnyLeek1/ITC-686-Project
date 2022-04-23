@@ -17,13 +17,21 @@ export default function ResultPage() {
             .then(data => setPlaylistInfo(data.body.tracks))
         }
 
-    }, [userContext.generatedPlaylist])
+    }, [userContext.generatedPlaylist]);
+
+    const addPlaylist = () => {
+        fetch('/add_tracks_to_spotify', {
+            method: 'POST',
+            headers: {'content-type': 'application/json'},
+            body: JSON.stringify({name: userContext.selectedSong.trackName, ids: userContext.generatedPlaylist})
+        })
+    }
 
     const convertTime = timeMs => {
         const totalSeconds = timeMs / 1000;
         const minutes = ~~(totalSeconds / 60);
         const seconds = ~~(totalSeconds - (minutes * 60));
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
 
     const SongDisplay = ({song, index}) => {
@@ -45,17 +53,21 @@ export default function ResultPage() {
     }
 
     return (
-        <div id="results">
-            <div className="song_display title_bar">
-                <p className="number">#</p>
-                <p className="album_art"> </p>
-                <div className="title">
-                    <p className="song">Title </p>
+        <div id="result_page">
+            <h1 className="result_title">The Results are in...</h1>
+            <div id="results">
+                <div className="song_display title_bar">
+                    <p className="number">#</p>
+                    <p className="album_art"> </p>
+                    <div className="title">
+                        <p className="song">Title </p>
+                    </div>
+                    <p className="album_name">Album</p>
+                    <p className="duration">Duration</p>
                 </div>
-                <p className="album_name">Album</p>
-                <p className="duration">Duration</p>
+                {playlistInfo ? playlistInfo.map((song, i) => <SongDisplay song={song} index={i} key={i} /> ) : undefined}
             </div>
-            {playlistInfo ? playlistInfo.map((song, i) => <SongDisplay song={song} index={i} key={i} /> ) : undefined}
+            <div id="add_button" onClick={() => addPlaylist()}>Add playlist to my Spotify</div>
         </div>
     )
 
