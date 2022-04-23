@@ -90,37 +90,37 @@ APP.post('/generate_similar', async (req, res) => {
         // grab 50 songs from the same artist
         let similar_songs = await runQuery("MATCH (:Artist{id:$id})<-[:BY]-(p1:Song) "+
             "RETURN p1.id "+
-            "LIMIT 25 ",
+            "LIMIT 50 ",
             {'id': id});
 
         // grab 50 songs featuring the same artist
         let similar_songs_artist_featuring_artist = await runQuery("MATCH (:Artist{id:$id})<-[:BY]-(:Song)-[:FEATURING]->(:Artist)<-[:BY]-(p1:Song) "+
             "RETURN p1.id "+
-            "LIMIT 25 ",
+            "LIMIT 50 ",
             {'id': id});
         
         // grab 50 songs featuring the same artist
         let similar_songs_featured = await runQuery("MATCH (:Artist{id:$id})<-[:FEATURING]-(p1:Song) "+
             "RETURN p1.id "+
-            "LIMIT 25 ",
+            "LIMIT 50 ",
             {'id': id});
 
         // grab 50 songs featuring the same artist
         let similar_songs_featured_by = await runQuery("MATCH (:Artist{id:$id})<-[:FEATURING]-(:Song)-[:BY]->(:Artist)<-[:BY]-(p1:Song) "+
             "RETURN p1.id "+
-            "LIMIT 25 ",
+            "LIMIT 50 ",
             {'id': id});
         
         // grab 50 songs by a featured artist
         let similar_artist_songs = await runQuery("MATCH (:Artist{id:$id})<-[:BY]-(p1:Song) "+
             "RETURN p1.id "+
-            "LIMIT 25 ",
+            "LIMIT 50 ",
             {'id': id});
         
         // grab 50 songs featuring a featured artist 
         let similar_artist_featured = await runQuery("MATCH (:Artist{id:$id})<-[:FEATURING]-(p1:Song) "+
             "RETURN p1.id "+
-            "LIMIT 25 ",
+            "LIMIT 50 ",
             {'id': id});
 
         
@@ -308,7 +308,8 @@ APP.post('/generate_similar', async (req, res) => {
             }
         }
 
-
+        if(cleaned_playlist.length > 50)
+            cleaned_playlist.splice(50);
 
         await res.json({'success': id, 'playlist': cleaned_playlist})
     } else if (idType == 'playlist') {
