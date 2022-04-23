@@ -147,7 +147,7 @@ APP.post('/generate_similar', async (req, res) => {
             "MERGE (a)-[r:ALBUM_TRACK]->(b) ",
             {'id': trackInfo['id'], 'album_id': album_id})
 
-        similarity_function = "WHERE p1 <> p2 "+
+        let similarity_function = "WHERE p1 <> p2 "+
         "WITH SUM(ABS(p1.danceability - p2.danceability) + ABS(p1.energy - p2.energy) + "+
         "ABS(p1.speechiness - p2.speechiness) + ABS(p1.acousticness - p2.acousticness) + "+
         "ABS(p1.instrumentalness - p2.instrumentalness) + ABS(p1.liveness - p2.liveness) + "+
@@ -169,10 +169,16 @@ APP.post('/generate_similar', async (req, res) => {
             "LIMIT 50 ",
             {'id': id});
         
-        // grab 50 songs from the same artist
+        // grab 50 songs featuring the same artist
         let similar_songs_featured = await runQuery("MATCH (p1:Song{id:$id})-[:BY]->(:Artist)<-[:FEATURING]-(p2:Song) "+
             similarity_function+
             "LIMIT 50 ",
+            {'id': id});
+
+        // grab 50 songs featuring the same artist
+        let similar_songs_artist_featuring_artist = await runQuery("MATCH (p1:Song{id:$id})-[:BY]->(:Artist)<-[:BY]-(:Song)-[:FEATURING]->(:Artist)<-[:BY]-(p2:Song) "+
+            similarity_function+
+            "LIMIT 25 ",
             {'id': id});
 
         // grab 50 songs by a featured artist
@@ -198,12 +204,24 @@ APP.post('/generate_similar', async (req, res) => {
             if (similar_songs_featured.records.length > i && !cleaned_playlist.includes(similar_songs_featured.records[i]._fields[0])) {
                 cleaned_playlist.push(similar_songs_featured.records[i]._fields[0]);
             }
+            if (similar_songs_artist_featuring_artist.records.length > i && !cleaned_playlist.includes(similar_songs_artist_featuring_artist.records[i]._fields[0])) {
+                cleaned_playlist.push(similar_songs_artist_featuring_artist.records[i]._fields[0]);
+            }
             if (similar_artist_featured.records.length > i && !cleaned_playlist.includes(similar_artist_featured.records[i]._fields[0])) {
                 cleaned_playlist.push(similar_artist_featured.records[i]._fields[0]);
             }
             if (similar_songs.records.length > i && !cleaned_playlist.includes(similar_songs.records[i]._fields[0])) {
                 cleaned_playlist.push(similar_songs.records[i]._fields[0]);
             }
+            if (!cleaned_playlist.includes(similar_features.records[i]._fields[0]) && i%3==0) {
+                cleaned_playlist.push(similar_features.records[i]._fields[0]);
+            }
+            if (cleaned_playlist.length >= 50) {
+                break;
+            }
+        }
+
+        for (let i = 0; similar_features.records.length; i++) {
             if (!cleaned_playlist.includes(similar_features.records[i]._fields[0])) {
                 cleaned_playlist.push(similar_features.records[i]._fields[0]);
             }
@@ -211,6 +229,8 @@ APP.post('/generate_similar', async (req, res) => {
                 break;
             }
         }
+
+
 
         await res.json({'success': id, 'playlist': cleaned_playlist})
     } else if (idType == 'playlist') {
