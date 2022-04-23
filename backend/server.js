@@ -65,7 +65,7 @@ APP.get('/get_track_features', (req, res) => {
 APP.post('/get_track_info', (req, res) => {
     const { ids } = req.body;
 
-    console.log(ids);
+    //console.log(ids);
 
     api.getTracks(ids).then(data => {
         res.json(data);
@@ -141,74 +141,43 @@ APP.post('/generate_similar', async (req, res) => {
             "MERGE (a)-[r:ALBUM_TRACK]->(b) ",
             {'id': trackInfo['id'], 'album_id': album_id})
 
+        similarity_function = "WHERE p1 <> p2 "+
+        "WITH SUM(ABS(p1.danceability - p2.danceability) + ABS(p1.energy - p2.energy) + "+
+        "ABS(p1.speechiness - p2.speechiness) + ABS(p1.acousticness - p2.acousticness) + "+
+        "ABS(p1.instrumentalness - p2.instrumentalness) + ABS(p1.liveness - p2.liveness) + "+
+        "ABS(p1.valence - p2.valence)) + ABS((p1.tempo / 250) - (p2.tempo / 250)) + "+ 
+        "ABS((p1.key / 250) - (p2.key / 250)) + ABS(((p1.loudness + 60) / 67.23) - ((p2.loudness + 60) / 67.23)) AS sim, "+
+        "p1, p2 "+
+        "RETURN p2.id "+
+        "ORDER BY sim ASC "
 
         // grab 50 songs with similar features
-        let similar_features = await runQuery("MATCH (p1:Song), (p2:Song) "+
-            "WHERE p1 <> p2 AND p1.id =$id "+
-            "WITH SUM(ABS(p1.danceability - p2.danceability) + ABS(p1.energy - p2.energy) + "+
-            "ABS(p1.speechiness - p2.speechiness) + ABS(p1.acousticness - p2.acousticness) + "+
-            "ABS(p1.instrumentalness - p2.instrumentalness) + ABS(p1.liveness - p2.liveness) + "+
-            "ABS(p1.valence - p2.valence)) + ABS((p1.tempo / 250) - (p2.tempo / 250)) + "+ 
-            "ABS((p1.key / 250) - (p2.key / 250)) + ABS(((p1.loudness + 60) / 67.23) - ((p2.loudness + 60) / 67.23)) AS sim, "+
-            "p1, p2 "+
-            "RETURN p2.id "+
-            "ORDER BY sim ASC "+
+        let similar_features = await runQuery("MATCH (p1:Song{id:$id}), (p2:Song) "+
+            similarity_function+
             "LIMIT 50 ",
             {'id': id});
 
         // grab 50 songs from the same artist
-        let similar_songs = await runQuery("MATCH (p1:Song)-[:BY]->(:Artist)<-[:BY]-(p2:Song) "+
-            "WHERE p1 <> p2 AND p1.id =$id "+
-            "WITH SUM(ABS(p1.danceability - p2.danceability) + ABS(p1.energy - p2.energy) + "+
-            "ABS(p1.speechiness - p2.speechiness) + ABS(p1.acousticness - p2.acousticness) + "+
-            "ABS(p1.instrumentalness - p2.instrumentalness) + ABS(p1.liveness - p2.liveness) + "+
-            "ABS(p1.valence - p2.valence)) + ABS((p1.tempo / 250) - (p2.tempo / 250)) + "+ 
-            "ABS((p1.key / 250) - (p2.key / 250)) + ABS(((p1.loudness + 60) / 67.23) - ((p2.loudness + 60) / 67.23)) AS sim, "+
-            "p1, p2 "+
-            "RETURN p2.id "+
-            "ORDER BY sim ASC "+
+        let similar_songs = await runQuery("MATCH (p1:Song{id:$id})-[:BY]->(:Artist)<-[:BY]-(p2:Song) "+
+            similarity_function+
             "LIMIT 50 ",
             {'id': id});
         
         // grab 50 songs from the same artist
-        let similar_songs_featured = await runQuery("MATCH (p1:Song)-[:BY]->(:Artist)<-[:FEATURING]-(p2:Song) "+
-            "WHERE p1 <> p2 AND p1.id =$id "+
-            "WITH SUM(ABS(p1.danceability - p2.danceability) + ABS(p1.energy - p2.energy) + "+
-            "ABS(p1.speechiness - p2.speechiness) + ABS(p1.acousticness - p2.acousticness) + "+
-            "ABS(p1.instrumentalness - p2.instrumentalness) + ABS(p1.liveness - p2.liveness) + "+
-            "ABS(p1.valence - p2.valence)) + ABS((p1.tempo / 250) - (p2.tempo / 250)) + "+ 
-            "ABS((p1.key / 250) - (p2.key / 250)) + ABS(((p1.loudness + 60) / 67.23) - ((p2.loudness + 60) / 67.23)) AS sim, "+
-            "p1, p2 "+
-            "RETURN p2.id "+
-            "ORDER BY sim ASC "+
+        let similar_songs_featured = await runQuery("MATCH (p1:Song{id:$id})-[:BY]->(:Artist)<-[:FEATURING]-(p2:Song) "+
+            similarity_function+
             "LIMIT 50 ",
             {'id': id});
 
         // grab 50 songs by a featured artist
-        let similar_artist_songs = await runQuery("MATCH (p1:Song)-[:FEATURING]->(:Artist)<-[:BY]-(p2:Song) "+
-            "WHERE p1 <> p2 AND p1.id =$id "+
-            "WITH SUM(ABS(p1.danceability - p2.danceability) + ABS(p1.energy - p2.energy) + "+
-            "ABS(p1.speechiness - p2.speechiness) + ABS(p1.acousticness - p2.acousticness) + "+
-            "ABS(p1.instrumentalness - p2.instrumentalness) + ABS(p1.liveness - p2.liveness) + "+
-            "ABS(p1.valence - p2.valence)) + ABS((p1.tempo / 250) - (p2.tempo / 250)) + "+ 
-            "ABS((p1.key / 250) - (p2.key / 250)) + ABS(((p1.loudness + 60) / 67.23) - ((p2.loudness + 60) / 67.23)) AS sim, "+
-            "p1, p2 "+
-            "RETURN p2.id "+
-            "ORDER BY sim ASC "+
+        let similar_artist_songs = await runQuery("MATCH (p1:Song{id:$id})-[:FEATURING]->(:Artist)<-[:BY]-(p2:Song) "+
+            similarity_function+
             "LIMIT 50 ",
             {'id': id});
         
         // grab 50 songs featuring a featured artist 
-        let similar_artist_featured = await runQuery("MATCH (p1:Song)-[:FEATURING]->(:Artist)<-[:FEATURING]-(p2:Song) "+
-            "WHERE p1 <> p2 AND p1.id =$id "+
-            "WITH SUM(ABS(p1.danceability - p2.danceability) + ABS(p1.energy - p2.energy) + "+
-            "ABS(p1.speechiness - p2.speechiness) + ABS(p1.acousticness - p2.acousticness) + "+
-            "ABS(p1.instrumentalness - p2.instrumentalness) + ABS(p1.liveness - p2.liveness) + "+
-            "ABS(p1.valence - p2.valence)) + ABS((p1.tempo / 250) - (p2.tempo / 250)) + "+ 
-            "ABS((p1.key / 250) - (p2.key / 250)) + ABS(((p1.loudness + 60) / 67.23) - ((p2.loudness + 60) / 67.23)) AS sim, "+
-            "p1, p2 "+
-            "RETURN p2.id "+
-            "ORDER BY sim ASC "+
+        let similar_artist_featured = await runQuery("MATCH (p1:Song{id:$id})-[:FEATURING]->(:Artist)<-[:FEATURING]-(p2:Song) "+
+            similarity_function+
             "LIMIT 50 ",
             {'id': id});
 
@@ -217,19 +186,21 @@ APP.post('/generate_similar', async (req, res) => {
         cleaned_playlist = []
 
         for (let i = 0; i<similar_features.records.length; i++) {
-            if (similar_artist_songs.records.length > i) {
+            if (similar_artist_songs.records.length > i && !cleaned_playlist.includes(similar_artist_songs.records[i]._fields[0])) {
                 cleaned_playlist.push(similar_artist_songs.records[i]._fields[0]);
             }
-            if (similar_songs_featured.records.length > i) {
+            if (similar_songs_featured.records.length > i && !cleaned_playlist.includes(similar_songs_featured.records[i]._fields[0])) {
                 cleaned_playlist.push(similar_songs_featured.records[i]._fields[0]);
             }
-            if (similar_artist_featured.records.length > i) {
+            if (similar_artist_featured.records.length > i && !cleaned_playlist.includes(similar_artist_featured.records[i]._fields[0])) {
                 cleaned_playlist.push(similar_artist_featured.records[i]._fields[0]);
             }
-            if (similar_songs.records.length > i) {
+            if (similar_songs.records.length > i && !cleaned_playlist.includes(similar_songs.records[i]._fields[0])) {
                 cleaned_playlist.push(similar_songs.records[i]._fields[0]);
             }
-            cleaned_playlist.push(similar_features.records[i]._fields[0]);
+            if (!cleaned_playlist.includes(similar_features.records[i]._fields[0])) {
+                cleaned_playlist.push(similar_features.records[i]._fields[0]);
+            }
             if (cleaned_playlist.length >= 50) {
                 break;
             }
