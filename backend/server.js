@@ -65,6 +65,8 @@ APP.get('/get_track_features', (req, res) => {
 APP.post('/get_track_info', (req, res) => {
     const { ids } = req.body;
 
+    console.log(`Getting info for ${ids.length} ids`);
+
     api.getTracks(ids).then(data => {
         res.json(data);
     })
@@ -149,9 +151,12 @@ APP.post('/generate_similar', async (req, res) => {
             }
         }
 
+        if(cleaned_playlist.length > 50)
+            cleaned_playlist.splice(50);
+
         await res.json({'success': id, 'playlist': cleaned_playlist})
 
-        .finally(res.json({'success': id, 'type': idType}))
+        // .finally(res.json({'success': id, 'type': idType}))
     } else if (idType == 'song') {
         let trackInfo = {'id': id}
         let artists = []

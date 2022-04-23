@@ -60,7 +60,7 @@ export default function ResultPage() {
                     <p className="number">#</p>
                     <p className="album_art"> </p>
                     <div className="title">
-                        <p className="song">Title </p>
+                        <p className="song">Title</p>
                     </div>
                     <p className="album_name">Album</p>
                     <p className="duration">Duration</p>
