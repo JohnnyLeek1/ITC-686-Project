@@ -29,15 +29,15 @@ export default function SelectedSongPage() {
             body: JSON.stringify({id: userContext.selectedSong.songId, idType: userContext.selectedSong.type})
         })
         .then(response => response.json())
-        .then(data => console.log(data));
+        .then(data => { userContext.setGeneratedPlaylist(data.playlist); navigate('/results') });
     }    
 
     const AudioFeature = ({featureName, value, color}) => {
         return (
             <div className="audio_feature">
                 {featureName} ({(value * 100).toFixed(1)}%)
-                <div class="progress">
-                    <div class={`progress-bar progress-bar-striped progress-bar-animated ${color}`} role="progressbar" aria-valuenow={value * 100} aria-valuemin="0" aria-valuemax="100" style={{width: `${value * 100}%`}}></div>
+                <div className="progress">
+                    <div className={`progress-bar progress-bar-striped progress-bar-animated ${color}`} role="progressbar" aria-valuenow={value * 100} aria-valuemin="0" aria-valuemax="100" style={{width: `${value * 100}%`}}></div>
                 </div>
             </div>
         );

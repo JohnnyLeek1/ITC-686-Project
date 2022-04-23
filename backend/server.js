@@ -62,6 +62,17 @@ APP.get('/get_track_features', (req, res) => {
     })
 });
 
+APP.post('/get_track_info', (req, res) => {
+    const { ids } = req.body;
+
+    console.log(ids);
+
+    api.getTracks(ids).then(data => {
+        res.json(data);
+    })
+});
+
+
 APP.post('/generate_similar', async (req, res) => {
     const { id, idType } = req.body;
 

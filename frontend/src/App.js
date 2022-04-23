@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage';
 
 import './styles/App.scss';
 import SelectedSongPage from './pages/SelectedSongPage';
+import ResultPage from './pages/ResultPage';
 
 export const UserContext = React.createContext({});
 
@@ -16,20 +17,23 @@ function App() {
   const [refreshToken, setRefreshToken] = useState(undefined);
   const [userInfo, setUserInfo] = useState(undefined);
   const [selectedSong, setSelectedSong] = useState(undefined);
+  const [generatedPlaylist, setGeneratedPlaylist] = useState(undefined);
 
   return (
     <div id="app_container">
         <UserContext.Provider value={{ 
-          accessToken: accessToken, setAccessToken: setAccessToken, 
-          refreshToken: refreshToken, setRefreshToken: setRefreshToken, 
-          userInfo: userInfo, setUserInfo: setUserInfo,
-          selectedSong: selectedSong, setSelectedSong: setSelectedSong
+          accessToken, setAccessToken, 
+          refreshToken, setRefreshToken, 
+          userInfo, setUserInfo,
+          selectedSong, setSelectedSong,
+          generatedPlaylist, setGeneratedPlaylist
         }}>
           <Router>
             <Routes>
               <Route path="/login/:accessToken/:refreshToken" element={<Authenticate />} />
               <Route path="/home" element={<HomePage />} />
               <Route path="/confirm_selection" element={<SelectedSongPage />} />
+              <Route path="/results" element={<ResultPage />} />
               <Route path="/" element={<LoginPage />} />
             </Routes>
           </Router>
