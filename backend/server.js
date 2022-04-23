@@ -106,6 +106,12 @@ APP.post('/generate_similar', async (req, res) => {
             {'id': id});
 
         // grab 50 songs featuring the same artist
+        let similar_songs_artist_featuring_featuring = await runQuery("MATCH (:Artist{id:$id})<-[:BY]-(:Song)-[:FEATURING]->(:Artist)<-[:FEATURING]-(p1:Song) "+
+            "RETURN p1.id "+
+            "LIMIT 25 ",
+            {'id': id});
+
+        // grab 50 songs featuring the same artist
         let similar_songs_featured_by = await runQuery("MATCH (:Artist{id:$id})<-[:FEATURING]-(:Song)-[:BY]->(:Artist)<-[:BY]-(p1:Song) "+
             "RETURN p1.id "+
             "LIMIT 50 ",
@@ -145,6 +151,9 @@ APP.post('/generate_similar', async (req, res) => {
             }
             if (similar_songs.records.length > i && !cleaned_playlist.includes(similar_songs.records[i]._fields[0])) {
                 cleaned_playlist.push(similar_songs.records[i]._fields[0]);
+            }
+            if (similar_songs_artist_featuring_featuring.records.length > i && !cleaned_playlist.includes(similar_songs_artist_featuring_featuring.records[i]._fields[0])) {
+                cleaned_playlist.push(similar_songs_artist_featuring_featuring.records[i]._fields[0]);
             }
             if (cleaned_playlist.length >= 50) {
                 break;
@@ -246,6 +255,12 @@ APP.post('/generate_similar', async (req, res) => {
             similarity_function+
             "LIMIT 25 ",
             {'id': id});
+
+        // grab 50 songs featuring the same artist
+        let similar_songs_artist_featuring_featuring = await runQuery("MATCH (p1:Song{id:$id})-[:BY]->(:Artist)<-[:BY]-(:Song)-[:FEATURING]->(:Artist)<-[:FEATURING]-(p2:Song) "+
+            similarity_function+
+            "LIMIT 25 ",
+            {'id': id});
         
         // grab 50 songs featuring the same artist
         let similar_songs_featured = await runQuery("MATCH (p1:Song{id:$id})-[:BY]->(:Artist)<-[:FEATURING]-(p2:Song) "+
@@ -293,6 +308,9 @@ APP.post('/generate_similar', async (req, res) => {
             }
             if (similar_songs.records.length > i && !cleaned_playlist.includes(similar_songs.records[i]._fields[0])) {
                 cleaned_playlist.push(similar_songs.records[i]._fields[0]);
+            }
+            if (similar_songs_artist_featuring_featuring.records.length > i && !cleaned_playlist.includes(similar_songs_artist_featuring_featuring.records[i]._fields[0])) {
+                cleaned_playlist.push(similar_songs_artist_featuring_featuring.records[i]._fields[0]);
             }
             if (cleaned_playlist.length >= 50) {
                 break;
