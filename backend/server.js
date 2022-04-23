@@ -139,7 +139,7 @@ APP.post('/generate_similar', async (req, res) => {
             "ABS(p1.valence - p2.valence)) + ABS((p1.tempo / 250) - (p2.tempo / 250)) + "+ 
             "ABS((p1.key / 250) - (p2.key / 250)) + ABS(((p1.loudness + 60) / 67.23) - ((p2.loudness + 60) / 67.23)) AS sim, "+
             "p1, p2 "+
-            "RETURN p2.name "+
+            "RETURN p2.id "+
             "ORDER BY sim ASC "+
             "LIMIT 50 ",
             {'id': id});
