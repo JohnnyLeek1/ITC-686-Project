@@ -1,10 +1,13 @@
 import React, { useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { UserContext } from "../App";
+import defaultSong from '../images/default_playlist_pic.png';
 
 export default function ResultPage() {
 
     const userContext = useContext(UserContext);
     const [playlistInfo, setPlaylistInfo] = useState(undefined);
+    const navigate = useNavigate();
 
     useEffect(() => {
 
@@ -24,6 +27,11 @@ export default function ResultPage() {
             method: 'POST',
             headers: {'content-type': 'application/json'},
             body: JSON.stringify({name: userContext.selectedSong.trackName, ids: userContext.generatedPlaylist})
+        }).then(response => response.json())
+        .then(data => {
+            userContext.setGeneratedPlaylistName(data.name);
+            userContext.setGeneratedPlaylistLink(data.link);
+            navigate('/done');
         })
     }
 
@@ -39,7 +47,7 @@ export default function ResultPage() {
             <a href={song.uri} target="_blank" rel="noreferrer noopener">
                 <div className="song_display">
                     <p className="number">{index + 1}</p>
-                    <img className="album_art" src={song.album.images[0].url} alt={`Album art for ${song.album.name}`} />
+                    <img className="album_art" src={song.album.images[0] ? song.album.images[0].url : defaultSong} alt={`Album art for ${song.album.name}`} />
                     <div className="title">
                         <p className="song">{song.name}</p>
                         <p className="artists">{song.artists.map(artist => artist.name).join(", ")}</p>

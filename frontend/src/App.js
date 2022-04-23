@@ -9,6 +9,7 @@ import HomePage from './pages/HomePage';
 import './styles/App.scss';
 import SelectedSongPage from './pages/SelectedSongPage';
 import ResultPage from './pages/ResultPage';
+import DonePage from './pages/DonePage';
 
 export const UserContext = React.createContext({});
 
@@ -18,6 +19,8 @@ function App() {
   const [userInfo, setUserInfo] = useState(undefined);
   const [selectedSong, setSelectedSong] = useState(undefined);
   const [generatedPlaylist, setGeneratedPlaylist] = useState(undefined);
+  const [generatedPlaylistName, setGeneratedPlaylistName] = useState(undefined);
+  const [generatedPlaylistLink, setGeneratedPlaylistLink] = useState(undefined);
 
   return (
     <div id="app_container">
@@ -26,7 +29,9 @@ function App() {
           refreshToken, setRefreshToken, 
           userInfo, setUserInfo,
           selectedSong, setSelectedSong,
-          generatedPlaylist, setGeneratedPlaylist
+          generatedPlaylist, setGeneratedPlaylist,
+          generatedPlaylistName, setGeneratedPlaylistName,
+          generatedPlaylistLink, setGeneratedPlaylistLink
         }}>
           <Router>
             <Routes>
@@ -34,6 +39,7 @@ function App() {
               <Route path="/home" element={<HomePage />} />
               <Route path="/confirm_selection" element={<SelectedSongPage />} />
               <Route path="/results" element={<ResultPage />} />
+              <Route path="/done" element={<DonePage />} />
               <Route path="/" element={<LoginPage />} />
             </Routes>
           </Router>

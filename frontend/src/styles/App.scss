@@ -427,3 +427,38 @@ body {
         }
     }
 }
+
+#done_page {
+    #view_button {
+
+        width: 300px;
+        height: 60px;
+        margin: auto;
+        margin-top: 1rem;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        cursor: pointer;
+        border-radius: 50px;
+
+        background-color: $spotify-green;
+        transition: background-color .2s;
+
+        &:hover {
+            background-color: $spotify-hover;
+        }
+    }
+
+    .generate_again_link {
+        text-align: center;
+        margin-top: 1rem;
+
+        transition: color .2s;
+
+        &:hover {
+            color: $spotify-green;
+        }
+    }
+}

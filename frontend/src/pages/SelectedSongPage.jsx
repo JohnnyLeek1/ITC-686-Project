@@ -7,6 +7,7 @@ export default function SelectedSongPage() {
  
     const [songFeatures, setSongFeatures] = useState(undefined);
     const userContext = useContext(UserContext);
+    const [songButtonText, setSongButtonText] = useState(`Recommend me songs like ${userContext.selectedSong.trackName}`);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -21,7 +22,7 @@ export default function SelectedSongPage() {
 
     const selectSong = () => {
 
-        console.log(userContext.selectedSong.songId);
+        setSongButtonText("Generating...");
 
         fetch('/generate_similar', {
             method: 'POST',
@@ -70,7 +71,7 @@ export default function SelectedSongPage() {
                     </div>
                     <div id="button_container">
                         <div id="back_button" onClick={() => navigate('/home')}>Go back</div>
-                        <div id="recommend_button" onClick={() => selectSong()}>Recommend me songs like {userContext.selectedSong.trackName}</div>
+                        <div id="recommend_button" onClick={() => songButtonText !== "Generating..." ? selectSong() : {}}>{songButtonText}</div>
                     </div>
                 </div>
             : undefined
