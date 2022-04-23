@@ -75,13 +75,6 @@ class SpotifyDatabase:
         
         for i in range(0, len(song_info["artists"])):
             tx.run("MERGE (a:Artist{name:$artist, id:$artist_id})", artist=song_info["artists"][i]["name"], artist_id=song_info["artists"][i]["id"])
-            # for genre in song_info["artists"][i]["genre"]:
-            #     tx.run("MERGE (a:Genre{name:$genre})",
-            #     genre=genre)
-            #     tx.run("MATCH (a:Artist), (b:Genre) "
-            #         "WHERE a.id = $id AND b.name = $genre "
-            #         "CREATE (a)-[r:MUSIC_GENRE]->(b) ",
-            #     id=song_info["artists"][i]["id"], genre=genre)
 
         # # Connect each together as needed
         tx.run("MATCH (a:Song), (b:Album) "
