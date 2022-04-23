@@ -84,6 +84,73 @@ APP.post('/generate_similar', async (req, res) => {
 
     if (idType == 'artist') {
         createArtist(id)
+
+        // grab 50 songs from the same artist
+        let similar_songs = await runQuery("MATCH (:Artist{id:$id})<-[:BY]-(p1:Song) "+
+            "RETURN p1.id "+
+            "LIMIT 25 ",
+            {'id': id});
+
+        // grab 50 songs featuring the same artist
+        let similar_songs_artist_featuring_artist = await runQuery("MATCH (:Artist{id:$id})<-[:BY]-(:Song)-[:FEATURING]->(:Artist)<-[:BY]-(p1:Song) "+
+            "RETURN p1.id "+
+            "LIMIT 25 ",
+            {'id': id});
+        
+        // grab 50 songs featuring the same artist
+        let similar_songs_featured = await runQuery("MATCH (:Artist{id:$id})<-[:FEATURING]-(p1:Song) "+
+            "RETURN p1.id "+
+            "LIMIT 25 ",
+            {'id': id});
+
+        // grab 50 songs featuring the same artist
+        let similar_songs_featured_by = await runQuery("MATCH (:Artist{id:$id})<-[:FEATURING]-(:Song)-[:BY]->(:Artist)<-[:BY]-(p1:Song) "+
+            "RETURN p1.id "+
+            "LIMIT 25 ",
+            {'id': id});
+        
+        // grab 50 songs by a featured artist
+        let similar_artist_songs = await runQuery("MATCH (:Artist{id:$id})<-[:BY]-(p1:Song) "+
+            "RETURN p1.id "+
+            "LIMIT 25 ",
+            {'id': id});
+        
+        // grab 50 songs featuring a featured artist 
+        let similar_artist_featured = await runQuery("MATCH (:Artist{id:$id})<-[:FEATURING]-(p1:Song) "+
+            "RETURN p1.id "+
+            "LIMIT 25 ",
+            {'id': id});
+
+        
+
+        cleaned_playlist = []
+
+        for (let i = 0; i<50; i++) {
+            if (similar_artist_songs.records.length > i && !cleaned_playlist.includes(similar_artist_songs.records[i]._fields[0])) {
+                cleaned_playlist.push(similar_artist_songs.records[i]._fields[0]);
+            }
+            if (similar_songs_featured.records.length > i && !cleaned_playlist.includes(similar_songs_featured.records[i]._fields[0])) {
+                cleaned_playlist.push(similar_songs_featured.records[i]._fields[0]);
+            }
+            if (similar_songs_featured_by.records.length > i && !cleaned_playlist.includes(similar_songs_featured_by.records[i]._fields[0])) {
+                cleaned_playlist.push(similar_songs_featured_by.records[i]._fields[0]);
+            }
+            if (similar_songs_artist_featuring_artist.records.length > i && !cleaned_playlist.includes(similar_songs_artist_featuring_artist.records[i]._fields[0])) {
+                cleaned_playlist.push(similar_songs_artist_featuring_artist.records[i]._fields[0]);
+            }
+            if (similar_artist_featured.records.length > i && !cleaned_playlist.includes(similar_artist_featured.records[i]._fields[0])) {
+                cleaned_playlist.push(similar_artist_featured.records[i]._fields[0]);
+            }
+            if (similar_songs.records.length > i && !cleaned_playlist.includes(similar_songs.records[i]._fields[0])) {
+                cleaned_playlist.push(similar_songs.records[i]._fields[0]);
+            }
+            if (cleaned_playlist.length >= 50) {
+                break;
+            }
+        }
+
+        await res.json({'success': id, 'playlist': cleaned_playlist})
+
         .finally(res.json({'success': id, 'type': idType}))
     } else if (idType == 'song') {
         let trackInfo = {'id': id}
@@ -168,6 +235,12 @@ APP.post('/generate_similar', async (req, res) => {
             similarity_function+
             "LIMIT 50 ",
             {'id': id});
+
+        // grab 50 songs featuring the same artist
+        let similar_songs_artist_featuring_artist = await runQuery("MATCH (p1:Song{id:$id})-[:BY]->(:Artist)<-[:BY]-(:Song)-[:FEATURING]->(:Artist)<-[:BY]-(p2:Song) "+
+            similarity_function+
+            "LIMIT 25 ",
+            {'id': id});
         
         // grab 50 songs featuring the same artist
         let similar_songs_featured = await runQuery("MATCH (p1:Song{id:$id})-[:BY]->(:Artist)<-[:FEATURING]-(p2:Song) "+
@@ -176,11 +249,11 @@ APP.post('/generate_similar', async (req, res) => {
             {'id': id});
 
         // grab 50 songs featuring the same artist
-        let similar_songs_artist_featuring_artist = await runQuery("MATCH (p1:Song{id:$id})-[:BY]->(:Artist)<-[:BY]-(:Song)-[:FEATURING]->(:Artist)<-[:BY]-(p2:Song) "+
+        let similar_songs_featured_by = await runQuery("MATCH (p1:Song{id:$id})-[:BY]->(:Artist)<-[:FEATURING]-(:Song)-[:BY]->(:Artist)<-[:BY]-(p2:Song) "+
             similarity_function+
             "LIMIT 25 ",
             {'id': id});
-
+        
         // grab 50 songs by a featured artist
         let similar_artist_songs = await runQuery("MATCH (p1:Song{id:$id})-[:FEATURING]->(:Artist)<-[:BY]-(p2:Song) "+
             similarity_function+
@@ -204,6 +277,9 @@ APP.post('/generate_similar', async (req, res) => {
             if (similar_songs_featured.records.length > i && !cleaned_playlist.includes(similar_songs_featured.records[i]._fields[0])) {
                 cleaned_playlist.push(similar_songs_featured.records[i]._fields[0]);
             }
+            if (similar_songs_featured_by.records.length > i && !cleaned_playlist.includes(similar_songs_featured_by.records[i]._fields[0])) {
+                cleaned_playlist.push(similar_songs_featured_by.records[i]._fields[0]);
+            }
             if (similar_songs_artist_featuring_artist.records.length > i && !cleaned_playlist.includes(similar_songs_artist_featuring_artist.records[i]._fields[0])) {
                 cleaned_playlist.push(similar_songs_artist_featuring_artist.records[i]._fields[0]);
             }
@@ -212,9 +288,6 @@ APP.post('/generate_similar', async (req, res) => {
             }
             if (similar_songs.records.length > i && !cleaned_playlist.includes(similar_songs.records[i]._fields[0])) {
                 cleaned_playlist.push(similar_songs.records[i]._fields[0]);
-            }
-            if (!cleaned_playlist.includes(similar_features.records[i]._fields[0]) && i%3==0) {
-                cleaned_playlist.push(similar_features.records[i]._fields[0]);
             }
             if (cleaned_playlist.length >= 50) {
                 break;
