@@ -19,18 +19,27 @@ export default function ResultPage() {
 
     }, [userContext.generatedPlaylist])
 
+    const convertTime = timeMs => {
+        const totalSeconds = timeMs / 1000;
+        const minutes = ~~(totalSeconds / 60);
+        const seconds = ~~(totalSeconds - (minutes * 60));
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+
     const SongDisplay = ({song, index}) => {
         return (
-            <div className="song_display">
-                <p className="number">{index + 1}</p>
-                <img className="album_art" src={song.album.images[0].url} alt={`Album art for ${song.album.name}`} />
-                <div className="title">
-                    <p className="song">{song.name}</p>
-                    <p className="artists">{song.artists.map(artist => artist.name).join(", ")}</p>
+            <a href={song.uri} target="_blank" rel="noreferrer noopener">
+                <div className="song_display">
+                    <p className="number">{index + 1}</p>
+                    <img className="album_art" src={song.album.images[0].url} alt={`Album art for ${song.album.name}`} />
+                    <div className="title">
+                        <p className="song">{song.name}</p>
+                        <p className="artists">{song.artists.map(artist => artist.name).join(", ")}</p>
+                    </div>
+                    <p className="album_name">{song.album.name}</p>
+                    <p className="duration">{convertTime(song.duration_ms)}</p>
                 </div>
-                <p className="album_name">{song.album.name}</p>
-                <p className="duration">{song.duration_ms / 1000} seconds</p>
-            </div>
+            </a>
         );
 
     }

@@ -32,6 +32,23 @@ body {
     color: #FFF;
 }
 
+/* width */
+::-webkit-scrollbar {
+    width: 10px;
+    margin-right: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 7px;
+}
+
 #logo_container {
 
     width: 30vw;
@@ -307,7 +324,7 @@ body {
 }
 
 #results {
-    width: 80%;
+    width: 80vw;
     max-height: 80vh;
 
     overflow-y: scroll;
@@ -323,7 +340,14 @@ body {
 
         height: 90px;
 
+        cursor: pointer;
+
         align-items: center;
+        transition: background-color .2s;
+
+        &:hover {
+            background-color: #8c8c8c;
+        }
 
         p, img, div {
             margin: 0 10px;
@@ -344,12 +368,24 @@ body {
             width: 40%;
         }
 
+        .title, .artists {
+            white-space: nowrap; 
+            overflow: hidden;
+            text-overflow: ellipsis; 
+            display: block;
+        }
+
+        .artists {
+            font-size: .8rem;
+            color: #cacaca;
+        }
+
         .album_name {
-            width: calc(100% - 40% - 60px - 20px - 10%);
+            width: calc(100% - 40% - 60px - 20px - 5%);
         }
 
         .duration {
-            width: 10%;
+            width: 5%;
         }
 
         &.title_bar {
