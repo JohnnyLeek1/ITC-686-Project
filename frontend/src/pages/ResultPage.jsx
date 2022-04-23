@@ -2,11 +2,14 @@ import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../App";
 import defaultSong from '../images/default_playlist_pic.png';
+import LoadingIcon from "../LoadingIcon";
 
 export default function ResultPage() {
 
     const userContext = useContext(UserContext);
     const [playlistInfo, setPlaylistInfo] = useState(undefined);
+    const [playlistButtonText, setPlaylistButtonText] = useState('Add playlist to my Spotify');
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -23,6 +26,7 @@ export default function ResultPage() {
     }, [userContext.generatedPlaylist]);
 
     const addPlaylist = () => {
+        setPlaylistButtonText("Adding...");
         fetch('/add_tracks_to_spotify', {
             method: 'POST',
             headers: {'content-type': 'application/json'},
@@ -73,9 +77,9 @@ export default function ResultPage() {
                     <p className="album_name">Album</p>
                     <p className="duration">Duration</p>
                 </div>
-                {playlistInfo ? playlistInfo.map((song, i) => <SongDisplay song={song} index={i} key={i} /> ) : undefined}
+                {playlistInfo ? playlistInfo.map((song, i) => <SongDisplay song={song} index={i} key={i} /> ) : <div className="center"><LoadingIcon /></div>}
             </div>
-            <div id="add_button" onClick={() => addPlaylist()}>Add playlist to my Spotify</div>
+            <div id="add_button" onClick={() => playlistButtonText !== "Adding..." ? addPlaylist() : {}}>{playlistButtonText}</div>
         </div>
     )
 
