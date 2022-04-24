@@ -16,7 +16,7 @@ export default function HomePage() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if(userContext.userInfo === undefined || topTracks === undefined) {
+        if(userContext.userInfo === undefined) {
             fetch('/my_info')
             .then(response => response.json())
             .then(data => userContext.setUserInfo(data.body));
@@ -33,7 +33,7 @@ export default function HomePage() {
             .then(response => response.json())
             .then(data => setPlaylists(data.body.items));
         }
-    }, [userContext, topTracks])
+    }, [userContext])
 
     const selectSong = song => {
         userContext.setSelectedSong(song);
@@ -41,7 +41,7 @@ export default function HomePage() {
     }
 
     const WelcomeScreen = () => {
-        const [animationClass, setAnimationClass] = useState('fade_in');
+        const [animationClass, setAnimationClass] = useState('');
         const ANIMATION_DELAY = 2000;
         setTimeout(() => setAnimationClass('fade_out'), ANIMATION_DELAY);
         setTimeout(() => setShowNextScreen(true), ANIMATION_DELAY + 1000);
